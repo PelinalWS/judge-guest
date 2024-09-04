@@ -18,12 +18,9 @@ function SignUpPage() {
     const handleSignUp = (e) => {
         e.preventDefault();
         if (name && email && password && role) {
-            //socket.emit('signUp', {name: name, email: email, password: password, role: role})
-            
+            socket.emit('signUp', {name: name, email: email, password: password, role: role})
+
         }
-    };
-    const toggleForm = () => {
-        setShowSignup(!showSignup);
     };
     const goLog = () => {
         navigate('/login');
@@ -73,7 +70,7 @@ function SignUpPage() {
                         <option value="admin">Admin</option>
                     </select>
                 </div>
-                <button type="submit">Kayıt Ol</button>
+                <button type="submit" onClick={goLog}>Kayıt Ol</button>
             </form>
         </div>
     );
