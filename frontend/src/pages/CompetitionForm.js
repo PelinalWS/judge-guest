@@ -1,4 +1,3 @@
-// Yarışma verileri, kriter ve projelerin atanması
 import React, { useState } from 'react';
 import CompetitionList from './CompetitionList';
 
@@ -6,7 +5,8 @@ function CompetitionForm({
     competitionName, setCompetitionName,
     competitionDate, setCompetitionDate,
     criteria, setCriteria,
-    projects, setProjects
+    projects, setProjects,
+    juryVoteCoefficient, setJuryVoteCoefficient // Juri katsayisi atama
 }) {
     const [newCriterion, setNewCriterion] = useState('');
     const [newProjectName, setNewProjectName] = useState('');
@@ -38,6 +38,7 @@ function CompetitionForm({
 
     return (
         <div>
+            {/* Yarisma adi belirleme */}
             <div style={{ marginBottom: '15px' }}>
                 <label>Yarışma Adı:</label>
                 <input
@@ -46,6 +47,8 @@ function CompetitionForm({
                     onChange={(e) => setCompetitionName(e.target.value)}
                 />
             </div>
+
+            {/* Yarisma tarihi belirleme */}
             <div style={{ marginBottom: '15px' }}>
                 <label>Yarışma Tarihi:</label>
                 <input
@@ -54,6 +57,18 @@ function CompetitionForm({
                     onChange={(e) => setCompetitionDate(e.target.value)}
                 />
             </div>
+
+            {/* Juri oy katsayısı belirleme */}
+            <div style={{ marginBottom: '15px' }}>
+                <label>Jüri Oy Katsayısı:</label>
+                <input
+                    type="number"
+                    value={juryVoteCoefficient}
+                    onChange={(e) => setJuryVoteCoefficient(e.target.value)}
+                    min="1"
+                />
+            </div>
+
             <CompetitionList
                 criteria={criteria}
                 setCriteria={setCriteria}

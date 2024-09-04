@@ -9,34 +9,34 @@ import './styles.css';
 const socket = io('http://192.168.59.151:5000');
 
 function CreateCompetitionPage() {
-    const navigate = useNavigate();
-    // Kullanıcı bilgilerini UserContextten alma
-    const { user } = useContext(UserContext);
+    const navigate = useNavigate(); 
+    const { user } = useContext(UserContext); 
 
+    // Yarışma bilgilerini saklamak için durum değişkenleri
     const [competitionName, setCompetitionName] = useState(''); // Yarışma adı
     const [competitionDate, setCompetitionDate] = useState(''); // Yarışma tarihi
     const [criteria, setCriteria] = useState([]); // Yarışma kriterleri
     const [projects, setProjects] = useState([]); // Yarışma projeleri
+    const [juryVoteCoefficient, setJuryVoteCoefficient] = useState(2); // Varsayılan jüri oy katsayısı
 
-    // Yarışma oluşturma işlemi
+    // Yarışmayı oluşturma işlemini gerçekleştiren fonksiyon
     const handleCreateCompetition = () => {
-        // Tüm alanların dolu olup olmadığını kontrol etme
         if (competitionName && competitionDate && criteria.length && projects.length) {
-            // Eğer tüm alanlar doluysa yarışma oluşturma requestini servera gönder
+            // Yarışma bilgilerini sunucuya gönderme
             socket.emit('createCompetition', {
                 name: competitionName,
                 date: competitionDate,
                 criteria,
                 projects,
-                createdBy: user.name,
+                createdBy: user.name, // Yarışmayı oluşturan kullanıcı
+                juryVoteCoefficient: juryVoteCoefficient, 
             });
 
-            // Yarışma başarıyla oluşturulduğunda yönlendirme yap
+            // Yarışma başarıyla oluşturulduğunda yarışma sayfasına geçilir
             socket.on('competitionCreated', (competitionId) => {
                 navigate(`/competition/${competitionId}`);
             });
         } else {
-            // Eğer bir veya daha fazla alan boşsa uyarı göster
             alert('Lütfen tüm alanları, yarışma tarihi de dahil olmak üzere doldurun.');
         }
     };
@@ -44,7 +44,6 @@ function CreateCompetitionPage() {
     return (
         <div className="container">
             <h1>Yarışma Oluştur</h1>
-            {/* Yarışma formu bileşeni */}
             <CompetitionForm
                 competitionName={competitionName}
                 setCompetitionName={setCompetitionName}
@@ -54,6 +53,8 @@ function CreateCompetitionPage() {
                 setCriteria={setCriteria}
                 projects={projects}
                 setProjects={setProjects}
+                juryVoteCoefficient={juryVoteCoefficient} // Katsayıyı aktarma
+                setJuryVoteCoefficient={setJuryVoteCoefficient} // Katsayıyı güncelleme
             />
             {/* Yarışma oluşturma butonu */}
             <button onClick={handleCreateCompetition} style={{ width: '90%', padding: '10px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '15px' }}>
