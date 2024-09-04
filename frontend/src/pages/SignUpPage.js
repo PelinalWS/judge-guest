@@ -3,24 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import './styles.css';
 
+import { io } from 'socket.io-client';
+const socket = io('http://192.168.59.151:5000');
+
 function SignUpPage() {
     const navigate = useNavigate();
     const { setUser } = useContext(UserContext);
-
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
+    const [showSignup, setShowSignup] = useState(true);
 
     const handleSignUp = (e) => {
         e.preventDefault();
-        if (email && password && role) {
-            setUser({ email, password, role });
-            navigate('/lobby');
-        } else if (name && email && password && role) {
-            setUser({ name, email, password, role });
-            navigate('/lobby');
+        if (name && email && password && role) {
+            //socket.emit('signUp', {name: name, email: email, password: password, role: role})
+            
         }
+    };
+    const toggleForm = () => {
+        setShowSignup(!showSignup);
+    };
+    const goLog = () => {
+        navigate('/login');
     };
 
     return (
@@ -33,6 +39,7 @@ function SignUpPage() {
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        required
                     />
                 </div>
                 <div>

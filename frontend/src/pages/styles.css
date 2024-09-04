@@ -99,8 +99,9 @@ button:hover:enabled {
 }
 
 .card.highlight {
-    background-color: #ec1844; /* Updated to red */
+    background-color: #f3f045; /* Updated to yellow */
 }
+
 
 /* Styles for Likert scale */
 .likert-container {

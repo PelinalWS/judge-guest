@@ -12,15 +12,16 @@ function generateCompetitionCode() {
 
 
 function handleSocketEvents(socket, io) {
-    socket.on('signUp', ({ name, email, password, requestedRole }) => {
+    socket.on('signUp', ({ name, email, password, role }) => {
         checkEmail(email, (error, det, results) => {
             if(!error && !det){
-                bcrypt.compare()
             }
         })
 
-    }
-    )
+    })
+    socket.on('login-request', ({ name, password})=>{
+
+    });
     // Yarisma yaratma
     socket.on('createCompetition', ({ name, date, criteria, projects, createdBy }) => {
         const competitionId = generateCompetitionCode();

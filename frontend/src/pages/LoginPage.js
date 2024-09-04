@@ -3,25 +3,34 @@ import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import './styles.css';
 
+import { io } from 'socket.io-client';
+const socket = io('http://192.168.59.151:5000');
+
 function LoginPage() {
     const navigate = useNavigate();
-    const { setLog } = useContext(UserContext);
+    const { setUser } = useContext(UserContext);
 
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (name && email && password) {
-            setLog({name, email, password});
-            navigate('/lobby');
-        } else if(email && password) {
-            setLog({email, password})
-            navigate('/lobby');
-        } else if(name && password) {
-            setLog({name, password})
-            navigate('/lobby');
+        if(email && password) {
+            setUser('', email, password, '', '');
+            socket.emit('login-request', {mail: email, password: password});
+            socket.on('login-confirm', (data) => {
+                setUser({
+                    name: data.name,
+                    email: data.email,
+                    password: '',
+                    role: data.role,
+                    token: data.token
+                });
+            });
+            navigate('/login');
+            socket.on('login-reject', (data) => {
+
+            })
         }
     };
 
@@ -33,14 +42,6 @@ function LoginPage() {
         <div className="container">
             <h1>Giriş</h1>
             <form onSubmit={handleLogin}>
-                <div>
-                    <label>İsim:</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                </div>
                 <div>
                     <label>Email:</label>
                     <input
