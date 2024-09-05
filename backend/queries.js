@@ -1,9 +1,8 @@
 const pool = require('./connection.js')
-const bcrypt = require('bcryptjs')
 
 function checkEmail(email, callback){
-    const sqlq = `SELECT * FROM users WHERE email = '${email}'`
-    pool.querry(sqlc, (error, results) => {
+    const sqlc = `SELECT * FROM users WHERE email = '${email}'`
+    pool.query(sqlc, (error, results) => {
         if(error){
             error = new Error("Emaili ararken hatayla karşılaşıldı")
             callback(error, true, results)
@@ -15,4 +14,10 @@ function checkEmail(email, callback){
             }
         }
     })
+}
+
+function addUser(name, email, password, role_requested){
+    const sqlc = `INSERT INTO users (name, email, password, role, role_requested) VALUES(
+        '${name}', '${email}', '${hash}', user, '${role}')`;
+    pool.query(sqlc);
 }

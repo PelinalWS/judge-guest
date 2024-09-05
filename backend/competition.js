@@ -1,6 +1,9 @@
 // yarisma mantigi ile ilgili socket eventlerini içerir
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const checks = require('./queries');
+const process = require("./keys.json"); //gets the token keys
 
 let competitions = {};
 
@@ -12,20 +15,61 @@ function generateCompetitionCode() {
 
 
 function handleSocketEvents(socket, io) {
-    socket.on('signUp', ({ name, email, password, role }) => {
-        checkEmail(email, (error, det, results) => {
-            if(!error && !det){
-            }
-        })
 
-    })
+    socket.on('signUp', ({ name, email, password, role }) => {
+        checks.checkEmail(email, (error, det, results) => {
+            if(!error && !det){
+                bcrypt.hash(password, 10, (hash) => {
+                    checks.addUser(name, email, hash, role);
+                });
+                socket.emit('signUp-confirm');
+            }
+        });
+    });
+
     socket.on('login-request', ({ email, password})=>{
         checkEmaill(email, (error, det, results) => {
             if(!error && !det){
-                const messsage = "Bu email bir hesaba bağlı değil";
+                const message = "Bu email bir hesaba bağlı değil";
                 socket.emit('login-reject', (message));
             } else if(!error && det){
-                socket.emit('login-confirm', (results));
+                bcrypt.compare(password, results.rows[0].password, (error, res) => {
+                    if(res){
+                        const name = results.rows[0].name;
+                        const role = results.rows[0].role;
+                        if(role == "user"){
+                            const tok = jwt.sign({
+                                name: name,
+                                email: email,
+                                role: role
+                            }, process.env.JWT_U, {
+                                expiresIn: "2h"
+                            });
+                        socket.emit('login-confirm', (name, email, role, tok));
+                        } else if(role == "member") {
+                            const tok = jwt.sign({
+                                name: name,
+                                email: email,
+                                role: role
+                            }, process.env.JWT_M, {
+                                expiresIn: "2h"
+                            });
+                        socket.emit('login-confirm', (name, email, role, tok));
+                        } else if(role == "admin") {
+                            const tok = jwt.sign({
+                                name: name,
+                                email: email,
+                                role: role
+                            }, process.env.JWT_A, {
+                                expiresIn: "2h"
+                            });
+                        socket.emit('login-confirm', (name, email, role, tok));
+                        } else {
+                            const message = "Henüz rolünüz tanımlanmadı."
+                            socket.emit('login-reject', (message));
+                        }
+                    }
+                })
             }
         })
     });
