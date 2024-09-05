@@ -6,7 +6,7 @@ import CompetitionForm from './CompetitionForm';
 import './styles.css';
 
 // Socket.io bağlantısını başlat. (backend ip)
-const socket = io('http://192.168.59.151:5000');
+const socket = io('http://localhost:5000');
 
 function CreateCompetitionPage() {
     const navigate = useNavigate(); 

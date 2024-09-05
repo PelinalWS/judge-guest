@@ -4,7 +4,7 @@ import { UserContext } from '../UserContext';
 import './styles.css';
 
 import { io } from 'socket.io-client';
-const socket = io('http://192.168.59.151:5000');
+const socket = io('http://localhost:5000');
 
 function LoginPage() {
     const navigate = useNavigate();

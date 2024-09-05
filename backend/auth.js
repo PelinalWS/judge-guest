@@ -3,9 +3,9 @@ const webtok = require('jsonwebtoken')
 
 const admin = (req, res, next) => {
     try{
-        console.log("Admin yetkilendirmesi aranıyor...")
-        const atok = req.headers.authorization
-        const decodedtk = webtok.verify(atok, process.env.JWT_KEYA)
+        console.log("Admin yetkilendirmesi aranıyor...");
+        const atok = req.headers.authorization;
+        const decodedtk = webtok.verify(atok, process.env.JWT_A);
         req.userDec = decodedtk
         next()
     } catch(error) {
@@ -19,7 +19,7 @@ const member = (req, res, next) => {
     try{
         console.log("Member yetkilendirmesi aranıyor...")
         const atok = req.headers.authorization
-        const decodedtk = webtok.verify(atok, process.env.JWT_KEYM)
+        const decodedtk = webtok.verify(atok, process.env.JWT_M)
         req.userDec = decodedtk
         next()
     } catch(error) {
@@ -33,7 +33,7 @@ const user = (req, res, next) => {
     try{
         console.log("User yetkilendirmesi aranıyor...")
         const atok = req.headers.authorization
-        const decodedtk = webtok.verify(atok, process.env.JWT_KEYU)
+        const decodedtk = webtok.verify(atok, process.env.JWT_U);
         req.userDec = decodedtk
         next()
     } catch(error) {

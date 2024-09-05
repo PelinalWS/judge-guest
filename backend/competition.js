@@ -2,7 +2,7 @@
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const checks = require('./queries');
+const checks = require('./queries.js');
 const process = require("./keys.json"); //gets the token keys
 
 let competitions = {};

@@ -8,7 +8,7 @@ import ProjectList from './ProjectList';
 import './styles.css';
 
 // Socket.IO ile backend sunucusuna bağlan
-const socket = io('http://192.168.59.151:5000');
+const socket = io('http://localhost:5000');
 
 function CompetitionPage() {
     const { competitionId } = useParams(); 
@@ -129,7 +129,7 @@ function CompetitionPage() {
                         <strong>{competitionId}</strong>
                     </div>
                     <QRCodeCanvas
-                        value={`http://192.168.59.151:3000/competition/${competitionId}`}
+                        value={`http://localhost:3000/competition/${competitionId}`}
                         size={200}
                         bgColor={"#ffffff"}
                         fgColor={"#000000"}

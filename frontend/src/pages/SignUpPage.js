@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './styles.css';
 
 import { io } from 'socket.io-client';
-const socket = io('http://192.168.59.151:5000');
+const socket = io('http://localhost:5000');
 
 function SignUpPage() {
     const navigate = useNavigate();
@@ -15,19 +15,19 @@ function SignUpPage() {
     const handleSignUp = (e) => {
         e.preventDefault();
         if (name && email && password && role) {
-            socket.emit('signUp', (name, email, password, role))
+            socket.emit('signUp', {name: name, email: email, password: password, role: role})
         }
     };
+
     const goLog = () => {
         navigate('/login');
     };
 
     useEffect(()=> {
+        console.log(`name: ${name}, email: ${email}, password ${password}, role: ${role}`)
         socket.on('signUp-confirm', goLog);
-        return () => {
-            socket.off('signUp-confirm', goLog);
-        }
-    })
+
+    });
 
     return (
         <div className="container">
