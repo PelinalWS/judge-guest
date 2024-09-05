@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UserContext } from '../UserContext';
 import './styles.css';
@@ -9,34 +9,34 @@ const socket = io('http://localhost:5000');
 function LoginPage() {
     const navigate = useNavigate();
     const { setUser } = useContext(UserContext);
-
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     const handleLogin = (e) => {
         e.preventDefault();
         if(email && password) {
-            socket.emit('login-request', {mail: email, password: password});
-            socket.on('login-confirm', (name, email, role, token) => {
-                setUser({
-                    name: name,
-                    email: email,
-                    password: '',
-                    role: role,
-                    token: token
-                });
-                navigate('/lobby');
-            });
-            navigate('/login');
-            socket.on('login-reject', (message) => {
-                
-            })
+            socket.emit('login-request', {email: email, password: password});
         }
     };
 
     const goSign = () => {
         navigate('/signUp');
     };
+
+    useEffect(() => {
+        socket.on('login-confirm', (name, email, role, token) => {
+            console.log("hesap açılıyor");  
+            setUser({
+                name: name,
+                email: email,
+                password: '',
+                role: role,
+                token: token
+            });
+            navigate('/lobby');
+        });
+        socket.on('login-reject', (message) => {});
+    });
 
     return (
         <div className="container">

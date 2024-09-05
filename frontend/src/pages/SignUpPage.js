@@ -24,9 +24,7 @@ function SignUpPage() {
     };
 
     useEffect(()=> {
-        console.log(`name: ${name}, email: ${email}, password ${password}, role: ${role}`)
         socket.on('signUp-confirm', goLog);
-
     });
 
     return (
@@ -74,6 +72,7 @@ function SignUpPage() {
                     </select>
                 </div>
                 <button type="submit">Kayıt Ol</button>
+                <button onClick={goLog}>Giriş Yap</button>
             </form>
         </div>
     );

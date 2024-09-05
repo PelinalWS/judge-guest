@@ -19,17 +19,26 @@ function handleSocketEvents(socket, io) {
     socket.on('signUp', ({ name, email, password, role }) => {
         console.log("kullanıcı kayıdı")
         checks.checkEmail(email, (error, det, results) => {
+            if(error){
+                console.log("email hata");
+                console.log(det);
+            }
             if(!error && !det){
-                bcrypt.hash(password, 10, (hash) => {
-                    checks.addUser(name, email, hash, role);
+                bcrypt.hash(password, 10, (error, hash) => {
+                    if(error){
+                        console.log("hash yaparken hata");
+                    } else {
+                        checks.addUser(name, email, hash, role);
+                    }
                 });
+                console.log("kayıt başarılı");
                 socket.emit('signUp-confirm');
             }
         });
     });
 
     socket.on('login-request', ({ email, password})=>{
-        checkEmaill(email, (error, det, results) => {
+        checks.checkEmail(email, (error, det, results) => {
             if(!error && !det){
                 console.log("bağlı değil")
                 const message = "Bu email bir hesaba bağlı değil";
@@ -38,8 +47,10 @@ function handleSocketEvents(socket, io) {
                 console.log("hesap bulundu")
                 bcrypt.compare(password, results.rows[0].password, (error, res) => {
                     console.log("şifre doğru");
-                    if(res){
+                    if(!error & res){
                         const name = results.rows[0].name;
+                        const email = results.rows[0].email;
+                        const password = results.rows[0].password;
                         const role = results.rows[0].role;
                         if(role == "user"){
                             const tok = jwt.sign({
@@ -58,6 +69,7 @@ function handleSocketEvents(socket, io) {
                             }, process.env.JWT_M, {
                                 expiresIn: "2h"
                             });
+
                         socket.emit('login-confirm', (name, email, role, tok));
                         } else if(role == "admin") {
                             const tok = jwt.sign({

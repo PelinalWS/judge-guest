@@ -7,7 +7,6 @@ import './styles.css';
 function LobbyPage() {
     const navigate = useNavigate();
     const { user } = useContext(UserContext);
-
     const [competitionCode, setCompetitionCode] = useState('');
 
     const handleJoinCompetition = () => {

@@ -1,6 +1,7 @@
 const pool = require('./connection.js')
 
 function checkEmail(email, callback){
+    console.log(`${email}`)
     console.log("query");
     const sqlc = `SELECT * FROM users WHERE email = '${email}'`
     pool.query(sqlc, (error, results) => {
