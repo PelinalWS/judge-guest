@@ -15,7 +15,7 @@ function SignUpPage() {
     const handleSignUp = (e) => {
         e.preventDefault();
         if (name && email && password && role) {
-            socket.emit('signUp', {name: name, email: email, password: password, role: role})
+            socket.emit('signUp', (name, email, password, role))
         }
     };
     const goLog = () => {
