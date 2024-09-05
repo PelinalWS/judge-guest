@@ -60,7 +60,7 @@ function handleSocketEvents(socket, io) {
                             }, process.env.JWT_U, {
                                 expiresIn: "2h"
                             });
-                        socket.emit('login-confirm', (name, email, role, tok));
+                        socket.emit('login-confirm', {name, email, role, tok});
                         } else if(role == "member") {
                             const tok = jwt.sign({
                                 name: name,
@@ -69,8 +69,7 @@ function handleSocketEvents(socket, io) {
                             }, process.env.JWT_M, {
                                 expiresIn: "2h"
                             });
-
-                        socket.emit('login-confirm', (name, email, role, tok));
+                        socket.emit('login-confirm', {name, email, role, tok});
                         } else if(role == "admin") {
                             const tok = jwt.sign({
                                 name: name,
@@ -79,7 +78,7 @@ function handleSocketEvents(socket, io) {
                             }, process.env.JWT_A, {
                                 expiresIn: "2h"
                             });
-                        socket.emit('login-confirm', (name, email, role, tok));
+                        socket.emit('login-confirm', {name, email, role, tok});
                         } else {
                             const message = "Henüz rolünüz tanımlanmadı."
                             socket.emit('login-reject', (message));
@@ -112,6 +111,8 @@ function handleSocketEvents(socket, io) {
             votingFinished: false,
             resultsVisible: false
         };
+
+        //checks.addComp(name, date, criteria, projects, createdBy);
     
         console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
     

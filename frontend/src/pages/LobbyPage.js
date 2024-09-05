@@ -19,11 +19,6 @@ function LobbyPage() {
         navigate('/create-competition');
     };
 
-    if (!user.name || !user.role) {
-        navigate('/');
-        return null;
-    }
-
     return (
         <div className="container">
             <h1>Lobi</h1>

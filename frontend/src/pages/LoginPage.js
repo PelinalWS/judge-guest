@@ -24,14 +24,14 @@ function LoginPage() {
     };
 
     useEffect(() => {
-        socket.on('login-confirm', (name, email, role, token) => {
+        socket.on('login-confirm', (data) => {
             console.log("hesap açılıyor");  
             setUser({
-                name: name,
-                email: email,
-                password: '',
-                role: role,
-                token: token
+                name: data.name,
+                email: data.email,
+                password: 'XXX',
+                role: data.role,
+                token: data.token
             });
             navigate('/lobby');
         });

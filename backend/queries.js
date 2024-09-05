@@ -27,4 +27,8 @@ function addUser(name, email, password, role_requested){
     pool.query(sqlc);
 }
 
+function addComp(name, date, criteria, projects, createdBy){
+    const sqlc = `INSERT INTO contests (name, )`;
+}
+
 module.exports = {checkEmail, addUser};
