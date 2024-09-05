@@ -1,69 +1,102 @@
--- public.contests definition
+-- DROP TYPE public.role_status;
 
--- Drop table
-
--- DROP TABLE public.contests;
-
-CREATE TABLE public.contests (
-	"name" varchar NOT NULL,
-	id int4 NOT NULL,
-	created_by varchar NOT NULL,
-	"date" date NOT NULL,
-	description varchar NOT NULL,
-	criteria _text NOT NULL,
-	members _int4 NULL,
-	jury _int4 NULL,
-	CONSTRAINT contests_pk PRIMARY KEY (id)
-);
-
+CREATE TYPE public.role_status AS ENUM (
+	'null',
+	'user',
+	'member',
+	'admin');
 
 -- public.users definition
 
 -- Drop table
 
--- DROP TABLE public.users;
+-- DROP TABLE users;
 
-CREATE TABLE public.users (
+CREATE TABLE users (
 	"name" varchar NOT NULL,
 	email varchar NOT NULL,
 	"password" varchar NOT NULL,
-	"role" public."role_status" DEFAULT 'null'::role_status NULL,
+	"role" public.role_status DEFAULT 'null'::role_status NULL,
 	userid int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
-	role_requested public."role_status" NULL,
+	role_requested public.role_status NULL,
 	CONSTRAINT users_pk PRIMARY KEY (userid)
 );
 
+-- public.contests definition
+
+-- Drop table
+
+-- DROP TABLE contests;
+
+CREATE TABLE contests (
+	id int4 GENERATED ALWAYS AS IDENTITY NOT NULL,
+	"name" varchar NOT NULL,
+	created_by int4 NOT NULL,
+	"date" date NOT NULL,
+	description varchar NOT NULL,
+	members _int4 NULL,
+	jury _int4 NULL,
+	access_code varchar NOT NULL,
+	CONSTRAINT contests_pk PRIMARY KEY (id),
+	CONSTRAINT contests_users_fk FOREIGN KEY (created_by) REFERENCES users(userid)
+);
 
 -- public.projects definition
 
 -- Drop table
 
--- DROP TABLE public.projects;
+-- DROP TABLE projects;
 
-CREATE TABLE public.projects (
+CREATE TABLE projects (
 	"name" varchar NOT NULL,
 	id int2 NOT NULL,
 	contest int4 NOT NULL,
 	team _int4 NOT NULL,
 	points float4 NULL,
 	CONSTRAINT projects_unique UNIQUE (id),
-	CONSTRAINT projects_contests_fk FOREIGN KEY (contest) REFERENCES public.contests(id)
+	CONSTRAINT projects_contests_fk FOREIGN KEY (contest) REFERENCES contests(id)
 );
-
 
 -- public.votes definition
 
 -- Drop table
 
--- DROP TABLE public.votes;
+-- DROP TABLE votes;
 
-CREATE TABLE public.votes (
+CREATE TABLE votes (
 	"user" int4 NOT NULL,
 	contest int4 NOT NULL,
 	project int2 NOT NULL,
 	likert _int2 NULL,
 	"comment" varchar NULL,
-	CONSTRAINT votes_contests_fk FOREIGN KEY (contest) REFERENCES public.contests(id),
-	CONSTRAINT votes_projects_fk FOREIGN KEY (project) REFERENCES public.projects(id),
-	CONSTRAINT votes_users_fk FOREIGN KEY ("user") REFERENCES public.users(userid)
+	CONSTRAINT votes_contests_fk FOREIGN KEY (contest) REFERENCES contests(id),
+	CONSTRAINT votes_projects_fk FOREIGN KEY (project) REFERENCES projects(id),
+	CONSTRAINT votes_users_fk FOREIGN KEY ("user") REFERENCES users(userid)
+);
+
+-- public.contest_criteria definition
+
+-- Drop table
+
+-- DROP TABLE contest_criteria;
+
+CREATE TABLE contest_criteria (
+	contest_id int4 NOT NULL,
+	criteria_id int4 GENERATED ALWAYS AS IDENTITY NOT NULL,
+	criteria_name varchar NOT NULL,
+	criteria_description varchar NULL,
+	CONSTRAINT contest_criteria_contests_fk FOREIGN KEY (contest_id) REFERENCES contests(id)
+);
+
+-- public.contest_jury definition
+
+-- Drop table
+
+-- DROP TABLE contest_jury;
+
+CREATE TABLE contest_jury (
+	contest_id int4 NOT NULL,
+	user_id int4 NOT NULL,
+	CONSTRAINT contest_jury_contests_fk FOREIGN KEY (contest_id) REFERENCES contests(id),
+	CONSTRAINT contest_jury_users_fk FOREIGN KEY (user_id) REFERENCES users(userid)
 );

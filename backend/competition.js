@@ -111,8 +111,7 @@ function handleSocketEvents(socket, io) {
             votingFinished: false,
             resultsVisible: false
         };
-
-        //checks.addComp(name, date, criteria, projects, createdBy);
+        checks.addComp(name, competitionId, date, criteria, createdBy);
     
         console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
     
