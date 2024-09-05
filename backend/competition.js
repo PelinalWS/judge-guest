@@ -17,6 +17,7 @@ function generateCompetitionCode() {
 function handleSocketEvents(socket, io) {
 
     socket.on('signUp', ({ name, email, password, role }) => {
+        console.log("kullanıcı kayıdı")
         checks.checkEmail(email, (error, det, results) => {
             if(!error && !det){
                 bcrypt.hash(password, 10, (hash) => {
@@ -30,10 +31,13 @@ function handleSocketEvents(socket, io) {
     socket.on('login-request', ({ email, password})=>{
         checkEmaill(email, (error, det, results) => {
             if(!error && !det){
+                console.log("bağlı değil")
                 const message = "Bu email bir hesaba bağlı değil";
                 socket.emit('login-reject', (message));
             } else if(!error && det){
+                console.log("hesap bulundu")
                 bcrypt.compare(password, results.rows[0].password, (error, res) => {
+                    console.log("şifre doğru");
                     if(res){
                         const name = results.rows[0].name;
                         const role = results.rows[0].role;

@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserContext } from '../UserContext';
 import './styles.css';
 
 import { io } from 'socket.io-client';
@@ -8,18 +7,16 @@ const socket = io('http://192.168.59.151:5000');
 
 function SignUpPage() {
     const navigate = useNavigate();
-    const { setUser } = useContext(UserContext);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('');
-    const [showSignup, setShowSignup] = useState(true);
 
     const handleSignUp = (e) => {
         e.preventDefault();
         if (name && email && password && role) {
             socket.emit('signUp', {name: name, email: email, password: password, role: role})
-
+            socket.on('signUp-confirm', goLog);
         }
     };
     const goLog = () => {
@@ -70,7 +67,7 @@ function SignUpPage() {
                         <option value="admin">Admin</option>
                     </select>
                 </div>
-                <button type="submit" onClick={goLog}>Kayıt Ol</button>
+                <button type="submit">Kayıt Ol</button>
             </form>
         </div>
     );

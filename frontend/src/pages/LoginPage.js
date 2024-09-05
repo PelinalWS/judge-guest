@@ -16,21 +16,20 @@ function LoginPage() {
     const handleLogin = (e) => {
         e.preventDefault();
         if(email && password) {
-            setUser('', email, password, '', '');
             socket.emit('login-request', {mail: email, password: password});
-            socket.on('login-confirm', (data) => {
+            socket.on('login-confirm', (name, email, role, token) => {
                 setUser({
-                    name: data.name,
-                    email: data.email,
+                    name: name,
+                    email: email,
                     password: '',
-                    role: data.role,
-                    token: data.token
+                    role: role,
+                    token: token
                 });
                 navigate('/lobby');
             });
             navigate('/login');
             socket.on('login-reject', (message) => {
-                return;
+                
             })
         }
     };
