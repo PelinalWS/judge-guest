@@ -7,14 +7,14 @@ const { handleSocketEvents } = require('./competition');
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
-
 const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
     }
 });
+
+app.use(cors());
 
 // socket bağlantılarının dinlenmesi
 io.on('connection', (socket) => {

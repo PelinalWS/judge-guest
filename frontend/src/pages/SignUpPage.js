@@ -16,12 +16,18 @@ function SignUpPage() {
         e.preventDefault();
         if (name && email && password && role) {
             socket.emit('signUp', {name: name, email: email, password: password, role: role})
-            socket.on('signUp-confirm', goLog);
         }
     };
     const goLog = () => {
         navigate('/login');
     };
+
+    useEffect(()=> {
+        socket.on('signUp-confirm', goLog);
+        return () => {
+            socket.off('signUp-confirm', goLog);
+        }
+    })
 
     return (
         <div className="container">
