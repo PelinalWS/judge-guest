@@ -18,7 +18,6 @@ function LoginPage() {
         if(email && password) {
             setUser('', email, password, '', '');
             socket.emit('login-request', {mail: email, password: password});
-
             socket.on('login-confirm', (data) => {
                 setUser({
                     name: data.name,
@@ -30,7 +29,7 @@ function LoginPage() {
                 navigate('/lobby');
             });
             navigate('/login');
-            socket.on('login-reject', (data) => {
+            socket.on('login-reject', (message) => {
                 return;
             })
         }

@@ -19,9 +19,17 @@ function handleSocketEvents(socket, io) {
         })
 
     })
-    socket.on('login-request', ({ name, password})=>{
-
+    socket.on('login-request', ({ email, password})=>{
+        checkEmaill(email, (error, det, results) => {
+            if(!error && !det){
+                const messsage = "Bu email bir hesaba bağlı değil";
+                socket.emit('login-reject', (message));
+            } else if(!error && det){
+                socket.emit('login-confirm', (results));
+            }
+        })
     });
+
     // Yarisma yaratma
     socket.on('createCompetition', ({ name, date, criteria, projects, createdBy }) => {
         const competitionId = generateCompetitionCode();
