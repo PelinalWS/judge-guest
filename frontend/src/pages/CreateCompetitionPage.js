@@ -6,7 +6,8 @@ import CompetitionForm from './CompetitionForm';
 import './styles.css';
 
 // Socket.io bağlantısını başlat. (backend ip)
-const socket = io('http://localhost:5000');
+const url = require('../config.json').url;
+const socket = io(`${url.backend}`);
 
 function CreateCompetitionPage() {
     const navigate = useNavigate(); 

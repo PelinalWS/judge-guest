@@ -7,74 +7,83 @@ import ConnectedUsersList from './ConnectedUsersList';
 import ProjectList from './ProjectList';
 import './styles.css';
 
-// Socket.IO ile backend sunucusuna bağlan
-const socket = io('http://localhost:5000');
+const url = require('../config.json').url;
+const socket = io(`${url.backend}`);
 
 function CompetitionPage() {
-    const { competitionId } = useParams(); 
-    const navigate = useNavigate(); 
-    const { user, setUser } = useContext(UserContext); 
+    const { competitionId } = useParams(); // URL'den yarışma ID'si alınıyor
+    const navigate = useNavigate();
+    const { user, setUser } = useContext(UserContext);
 
-    const [competition, setCompetition] = useState(null); // Yarışma verilerini tutacak state
-    const [username, setUsername] = useState(user.name || ''); // Kullanıcı adını tutacak state
-    const [votingStarted, setVotingStarted] = useState(false); // Oylama başladı mı kontrol eden state
-    const [votingFinished, setVotingFinished] = useState(false); // Oylama bitmiş mi kontrol eden state
-    const [resultsVisible, setResultsVisible] = useState(false); // Sonuçların görüntülenmesini kontrol eden state
-    const [juryMembers, setJuryMembers] = useState([]); // Jüri üyelerini tutacak state
-    const [juryVoteCoefficient, setJuryVoteCoefficient] = useState(2); // Varsayılan jüri oy katsayısı
+    const [competition, setCompetition] = useState(null); // Yarışma bilgilerini tutan state
+    const [username, setUsername] = useState(user.name || ''); // Kullanıcı adını tutan state
+    const [votingStarted, setVotingStarted] = useState(false); // Oylamanın başlayıp başlamadığını tutan state
+    const [votingFinished, setVotingFinished] = useState(false); // Oylamanın bitip bitmediğini tutan state
+    const [resultsVisible, setResultsVisible] = useState(false); // Sonuçların görünürlüğünü tutan state
+    const [winningProject, setWinningProject] = useState(null); // Kazanan projeyi tutan state
+    const [juryMembers, setJuryMembers] = useState([]); // Jüri üyelerini tutan state
+    const [juryVoteCoefficient, setJuryVoteCoefficient] = useState(2); // Jüri oy katsayısı
 
     useEffect(() => {
-        // Kullanıcı adı varsa yarışmaya katıl
         if (!user.name) {
             return;
         }
 
-        // Yarışmaya katılma isteği
+        // Yarışmaya katılım isteği gönderiliyor
         socket.emit('joinCompetition', { competitionId, name: user.name });
-
-        // Yarışma verilerini alma ve state güncellemeleri
+        // Yarışma verileri alındığında. (Eklemeler yapıldı)
         socket.on('competitionData', (data) => {
             const uniqueUsers = Array.from(new Set(data.connectedUsers.map(u => u.name)))
                 .map(name => data.connectedUsers.find(u => u.name === name));
 
+            // Yarışma verileri güncelleniyor
             setCompetition({
                 ...data,
                 connectedUsers: uniqueUsers,
+                criteria: data.criteria.map(criterion => ({
+                    ...criterion,
+                    coefficient: criterion.coefficient || 1, // Kriter katsayıları (yeni)
+                    description: criterion.description || '',
+                })),
             });
             setJuryMembers(data.juryMembers || []);
             setVotingStarted(data.votingStarted || false);
             setVotingFinished(data.votingFinished || false);
             setResultsVisible(data.resultsVisible || false);
             setJuryVoteCoefficient(data.juryVoteCoefficient || 2);
+
+            // Kazanan proje belirleniyor. Yarışma durumu için
+            if (data.resultsVisible) {
+                const winning = data.projects.reduce((max, project) => 
+                    project.averageScore > (max?.averageScore || 0) ? project : max, null);
+                setWinningProject(winning);
+            }
         });
 
-        // Component unmount olduğunda socket dinleyiciyi temizliyoruz
         return () => {
             socket.off('competitionData');
         };
     }, [competitionId, user]);
 
-    // Oylamayı başlatma fonksiyonu
     const startVoting = () => {
         setVotingStarted(true);
         socket.emit('startVoting', { competitionId });
     };
 
-    // Oylamayı bitirme fonksiyonu
     const finishVoting = () => {
         setVotingStarted(false);
         setVotingFinished(true);
         socket.emit('finishVoting', { competitionId });
     };
 
-    // Sonuçları gösterme fonksiyonu
     const handleShowResults = () => {
         socket.emit('showResults', { competitionId });
         setResultsVisible(true);
     };
 
-    // Jüri üyelerini ekleme veya çıkarma fonksiyonu
     const toggleJuryMember = (userName) => {
+        if (votingStarted) return; // Oylama başladıysa jüri değiştirme engelleniyor
+
         const updatedJury = juryMembers.includes(userName)
             ? juryMembers.filter(jury => jury !== userName)
             : [...juryMembers, userName];
@@ -83,12 +92,25 @@ function CompetitionPage() {
         socket.emit('updateJuryMembers', { competitionId, juryMembers: updatedJury });
     };
 
-    // Lobiye dönme fonksiyonu
     const returnToLobby = () => {
         navigate('/lobby');
     };
 
-    // Kullanıcı adı yoksa kullanıcıyı yarışmaya katılması için kullanıcı adı gireceği form
+    // Yarışma durumunu gösteren mesajlar
+    const renderStatusMessage = () => {
+        if (resultsVisible) {
+            return `Sonuçlar açıklandı. Kazanan proje: ${winningProject?.name || 'Henüz kazanan yok'}`;
+        }
+        if (votingFinished) {
+            return 'Oylama sona erdi.';
+        }
+        if (votingStarted) {
+            return 'Oylama başladı.';
+        }
+        return 'Oylamanın başlatılması bekleniyor.';
+    };
+
+    // Kullanıcı adı alınmadıysa (qr veya link ile bağlananlar)
     if (!user.name) {
         return (
             <div className="container">
@@ -111,7 +133,6 @@ function CompetitionPage() {
         );
     }
 
-    // Yarışma bulunamadı mesajı
     if (!competition) {
         return <div>Yarışma bulunamadı...</div>;
     }
@@ -121,7 +142,6 @@ function CompetitionPage() {
             <h1>{competition.name}</h1>
             <h3>Tarih: {competition.date || 'Tarih belirtilmedi'}</h3>
 
-            {/* Admin veya üye rolündeki kullanıcılar için QR kod ve yarışma kodu */}
             {(user.role === 'admin' || user.role === 'member') && (
                 <div className="qr-section">
                     <div className="competition-code">
@@ -129,7 +149,7 @@ function CompetitionPage() {
                         <strong>{competitionId}</strong>
                     </div>
                     <QRCodeCanvas
-                        value={`http://localhost:3000/competition/${competitionId}`}
+                        value={`${config.frontend}/competition/${competitionId}`}
                         size={200}
                         bgColor={"#ffffff"}
                         fgColor={"#000000"}
@@ -140,9 +160,20 @@ function CompetitionPage() {
                 </div>
             )}
 
-            <h3>Jüri Oy Katsayısı: {juryVoteCoefficient}</h3>
+            {/* Yarışma Durumu. Yeni eklendi */}
+            <div className="competition-status">
+                <h3>Durum: {renderStatusMessage()}</h3>
+            </div>
 
-            {/* Proje listesi */}
+            <h3>Kriterler</h3>
+            <ul>
+                {competition.criteria.map((criterion, index) => (
+                    <li key={index}>
+                        <strong>{criterion.name}</strong>: {criterion.description} (Katsayı: {criterion.coefficient})
+                    </li>
+                ))}
+            </ul>
+
             <ProjectList
                 projects={competition.projects}
                 resultsVisible={resultsVisible}
@@ -154,7 +185,6 @@ function CompetitionPage() {
                 navigate={navigate}
             />
 
-            {/* Katılımcı listesi */}
             <ConnectedUsersList
                 connectedUsers={competition.connectedUsers}
                 user={user}
@@ -162,7 +192,6 @@ function CompetitionPage() {
                 toggleJuryMember={toggleJuryMember}
             />
 
-            {/* Admin veya üye rolündeki kullanıcılar için voting işlemleri */}
             {(user.role === 'admin' || user.role === 'member') && (
                 <div style={{ marginTop: '20px' }}>
                     <button onClick={startVoting} disabled={votingStarted || votingFinished}>
@@ -179,7 +208,6 @@ function CompetitionPage() {
                 </div>
             )}
 
-            {/* Sonuçlar görünüyorsa lobiye dönme butonu */}
             {resultsVisible && (
                 <div style={{ marginTop: '20px' }}>
                     <button onClick={returnToLobby}>Lobiye Dön</button>

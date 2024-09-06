@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './styles.css';
 
 import { io } from 'socket.io-client';
-const socket = io('http://localhost:5000');
+const url = require('../config.json').url;
+const socket = io(`${url.backend}`);
 
 function SignUpPage() {
     const navigate = useNavigate();
