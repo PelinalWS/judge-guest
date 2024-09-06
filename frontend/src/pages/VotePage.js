@@ -30,6 +30,7 @@ function VotePage() {
         socket.emit('requestCompetitionData', { competitionId });
 
         socket.on('competitionData', (data) => {
+            console.log(data);
             setCompetition(data);
             setIsJury(location.state.juryMembers.includes(user.name)); // Kullanıcının jüri üyesi olup olmadığını kontrol etme
         });

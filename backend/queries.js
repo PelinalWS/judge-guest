@@ -79,4 +79,9 @@ function addProj(id, projects){
     });
 }
 
-module.exports = {checkEmail, addUser, addComp, getComp, addProj};
+function getProj(id, callback){
+    const sqlc = `SELECT * FROM projects WHERE contest = '${id}'`;
+    pool.query(sqlc, callback);
+}
+
+module.exports = {checkEmail, addUser, addComp, getComp, addProj, getProj};
