@@ -92,6 +92,7 @@ function handleSocketEvents(socket, io) {
     // Yarisma yaratma
     socket.on('createCompetition', ({ name, date, criteria, projects, createdBy }) => {
         const competitionId = generateCompetitionCode();
+        
         competitions[competitionId] = {
             name,
             date, 
@@ -112,7 +113,7 @@ function handleSocketEvents(socket, io) {
             resultsVisible: false
         };
         checks.addComp(name, competitionId, date, criteria, createdBy);
-    
+        checks.addProj(competitionId, projects);
         console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
     
         socket.join(competitionId);
@@ -121,6 +122,10 @@ function handleSocketEvents(socket, io) {
 
     // yarismaya katilma
     socket.on('joinCompetition', ({ competitionId, name }) => {
+        /*checks.getComp(competitionId, (result) => {
+            const competition = result;
+
+        });*/
         if (competitions[competitionId]) {
             const competition = competitions[competitionId];
 
