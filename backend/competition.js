@@ -92,7 +92,6 @@ function handleSocketEvents(socket, io) {
     // Yarisma yaratma
     socket.on('createCompetition', ({ name, date, criteria, projects, createdBy }) => {
         const competitionId = generateCompetitionCode();
-        
         competitions[competitionId] = {
             name,
             date, 
@@ -112,8 +111,7 @@ function handleSocketEvents(socket, io) {
             votingFinished: false,
             resultsVisible: false
         };
-        checks.addComp(name, competitionId, date, criteria, createdBy);
-        checks.addProj(competitionId, projects);
+        checks.addComp(name, competitionId, date, criteria, createdBy, projects);
         console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
     
         socket.join(competitionId);

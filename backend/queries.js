@@ -27,7 +27,7 @@ function addUser(name, email, password, role_requested){
     pool.query(sqlc);
 }
 
-function addComp(name, id, date, criteria, createdBy){
+function addComp(name, id, date, criteria, createdBy, projects){
     const sqlc1 = `SELECT * FROM users WHERE name = '${createdBy}'`;
     pool.query(sqlc1, (error, results1) => {
         if(!error && results1.rowCount != 0){
@@ -40,13 +40,13 @@ function addComp(name, id, date, criteria, createdBy){
             getComp(id, (error, results2) => {
                 if(!error && results2.rowCount != 0){
                     const contestId = results2.rows[0].id;
-                    console.log(contestId);
                     for(i = 0; i < criteria.length; i++){
                         console.log("inserting criteria")
                         const sqlc = `INSERT INTO contest_criteria (contest_id, criteria_name, criteria_description) VALUES(
                             '${contestId}', '${criteria[i]}', '')`;
                         pool.query(sqlc);
                     }
+                    addProj(id, projects)
                 }
             });
         }
@@ -61,8 +61,21 @@ function getComp(id, callback){
 }
 
 function addProj(id, projects){
-    getComp(id, (result) => {
-        const sqlc = `INSERT INTO projects (name, id, contest)`;
+    getComp(id, (error, result) => {
+        console.log("no error yet in proj")
+        if(error){
+            console.log("error in proj")
+        }
+        if(!error && result.rowCount != 0){
+            const contestId = result.rows[0].id;
+            console.log("read contest id");
+            for(i = 0; i < projects.length; i++){
+                const sqlc = `INSERT INTO projects (name, contest, description) VALUES (
+                    '${projects[i].name}', '${contestId}', '${projects[i].description}')`;
+                pool.query(sqlc);
+                console.log("project created");
+            }
+        }
     });
 }
 
