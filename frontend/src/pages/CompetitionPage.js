@@ -149,7 +149,7 @@ function CompetitionPage() {
                         <strong>{competitionId}</strong>
                     </div>
                     <QRCodeCanvas
-                        value={`${config.frontend}/competition/${competitionId}`}
+                        value={`${url.frontend}/competition/${competitionId}`}
                         size={200}
                         bgColor={"#ffffff"}
                         fgColor={"#000000"}
