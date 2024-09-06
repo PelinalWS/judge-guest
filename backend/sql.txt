@@ -1,10 +1,16 @@
--- DROP TYPE public.role_status;
 
-CREATE TYPE public.role_status AS ENUM (
+delete from contests where description = '';
+delete from contest_criteria  where criteria_description = '';
+delete from projects;
+
+
+-- DROP TYPE public."role_status";
+
+CREATE TYPE public."role_status" AS ENUM (
 	'null',
-	'user',
+	'admin',
 	'member',
-	'admin');
+	'user');
 
 -- public.users definition
 
@@ -13,12 +19,12 @@ CREATE TYPE public.role_status AS ENUM (
 -- DROP TABLE users;
 
 CREATE TABLE users (
+	userid int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	"name" varchar NOT NULL,
 	email varchar NOT NULL,
 	"password" varchar NOT NULL,
-	"role" public.role_status DEFAULT 'null'::role_status NULL,
-	userid int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
-	role_requested public.role_status NULL,
+	"role" public."role_status" DEFAULT 'null'::role_status NULL,
+	role_requested public."role_status" NULL,
 	CONSTRAINT users_pk PRIMARY KEY (userid)
 );
 
@@ -29,7 +35,7 @@ CREATE TABLE users (
 -- DROP TABLE contests;
 
 CREATE TABLE contests (
-	id int4 GENERATED ALWAYS AS IDENTITY NOT NULL,
+	id int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	"name" varchar NOT NULL,
 	created_by int4 NOT NULL,
 	"date" date NOT NULL,
@@ -48,11 +54,11 @@ CREATE TABLE contests (
 -- DROP TABLE projects;
 
 CREATE TABLE projects (
+	id int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	"name" varchar NOT NULL,
-	id int2 NOT NULL,
 	contest int4 NOT NULL,
-	team _int4 NOT NULL,
 	points float4 NULL,
+	description varchar NULL,
 	CONSTRAINT projects_unique UNIQUE (id),
 	CONSTRAINT projects_contests_fk FOREIGN KEY (contest) REFERENCES contests(id)
 );
@@ -66,7 +72,7 @@ CREATE TABLE projects (
 CREATE TABLE votes (
 	"user" int4 NOT NULL,
 	contest int4 NOT NULL,
-	project int2 NOT NULL,
+	project int4 NOT NULL,
 	likert _int2 NULL,
 	"comment" varchar NULL,
 	CONSTRAINT votes_contests_fk FOREIGN KEY (contest) REFERENCES contests(id),
@@ -82,7 +88,7 @@ CREATE TABLE votes (
 
 CREATE TABLE contest_criteria (
 	contest_id int4 NOT NULL,
-	criteria_id int4 GENERATED ALWAYS AS IDENTITY NOT NULL,
+	criteria_id int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	criteria_name varchar NOT NULL,
 	criteria_description varchar NULL,
 	CONSTRAINT contest_criteria_contests_fk FOREIGN KEY (contest_id) REFERENCES contests(id)
@@ -99,4 +105,17 @@ CREATE TABLE contest_jury (
 	user_id int4 NOT NULL,
 	CONSTRAINT contest_jury_contests_fk FOREIGN KEY (contest_id) REFERENCES contests(id),
 	CONSTRAINT contest_jury_users_fk FOREIGN KEY (user_id) REFERENCES users(userid)
+);
+
+-- public.project_teams definition
+
+-- Drop table
+
+-- DROP TABLE project_teams;
+
+CREATE TABLE project_teams (
+	project int4 NOT NULL,
+	"user" int4 NOT NULL,
+	CONSTRAINT project_teams_projects_fk FOREIGN KEY (project) REFERENCES projects(id),
+	CONSTRAINT project_teams_users_fk FOREIGN KEY ("user") REFERENCES users(userid)
 );
