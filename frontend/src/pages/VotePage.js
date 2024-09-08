@@ -5,8 +5,8 @@ import { UserContext } from '../UserContext';
 import './styles.css';
 
 // Sunucuya soket bağlantısı başlatılıyor
-const url = require('../config.json').url;
-const socket = io(`${url.backend}`);
+const config = require('../config.json').url;
+const socket = io(`${config.backendURL}`);
 
 function VotePage() {
     const { competitionId, projectId } = useParams(); // ProjectId'yi URL'den alır

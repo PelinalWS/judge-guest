@@ -145,36 +145,14 @@ function handleSocketEvents(socket, io) {
 
     // Request Competition Data
     socket.on('requestCompetitionData', ({ competitionId }) => {
-        checks.getComp(competitionId, (error1, results1) => {
-            if(error1) {
-                console.log(`No competition found with competitionId: ${competitionId}`);
-                socket.emit('error', 'Competition not found');
-            } else {
-                checks.getProj(results1.rows[0].id, (error2, results2) => {
-                    if(!error2 && results2.rowCount != 0){
-                        const projects = {};
-                        for(i = 0; i < results2.rowCount; i++){
-                            projects[i] = {
-                                id: results2.rows[i].id,
-                                name: results2.rows[i].name,
-                                description: results2.rows[i].description
-                            };
-                        }
-                        console.log(projects);
-                        const competition = {
-                            name: results1.rows[0].name,
-                            date: results1.rows[0].date,
-                            description: results1.rows[0].description,
-                            access: results1.rows[0].access_code,
-                            projects: projects
-                        }
-                        console.log(`Sending competition data for competitionId: ${competitionId}`);
-                        socket.emit('competitionData', competition);
-                    }
-                });
-
-            }
-        });
+        const competition = competitions[competitionId];
+        if (competition) {
+            console.log(`Sending competition data for competitionId: ${competitionId}`);
+            socket.emit('competitionData', competition);
+        } else {
+            console.log(`No competition found with competitionId: ${competitionId}`);
+            socket.emit('error', 'Competition not found');
+        }
     });
 
     // Update Jury Members
@@ -216,7 +194,7 @@ function handleSocketEvents(socket, io) {
 
     socket.on('submitVotes', ({ competitionId, projectId, userName, comment, votes }) => {
         console.log(votes);
-        checks.vote(userName, competitionId, projectId, comment, votes);
+        //checks.vote(userName, competitionId, projectId, comment, votes);
         
         const competition = competitions[competitionId];
         if (competition) {

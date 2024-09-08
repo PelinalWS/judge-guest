@@ -89,13 +89,32 @@ function getUser(name, callback){
     pool.query(sqlc, callback);
 }
 
-function vote(userId, compId, projectId, comment, votes){
-    const sqlc1 = `INSERT INTO votes (user, contest, project, comment) VALUES (
-        '${userId}', '${compId}', '${projectId}', '${comment}')`;
-    pool.query(sqlc1);
-    const sqlc2 = `INSERT INTO user_criteria_vote (userid, criteria_id, point, project_id) VALUES (
-        '${userId}', '', '', '${projectId}')`;
-    pool.query(sqlc2);
+async function vote(email, compId, projectId, comment, votes){
+    const sqlc = `INSERT INTO votes ("user", contest, project, "comment")
+	                    SELECT
+                        	u.userid,
+                        	p.contest AS contest_id,
+                        	p.id AS project_id,
+                        	'${comment}' AS comment
+	                    FROM
+                        	users u
+	                    JOIN
+                        	contests c ON c.access_code = '${compId}'
+	                    JOIN
+                        	projects p ON p.id = ${projectId}
+	                    WHERE
+                        	u.email = '${email}';`;
+    await pool.query(sqlc);
+    const sqlc2 = `INSERT INTO user_criteria_vote (userid, criteria_id, point, project_id)
+                        SELECT
+                            u.userid,
+                            c.criteria_id,
+                            ${votes} AS point,
+                            ${projectId} AS project_id
+                        FROM
+                            users u
+                        JOIN
+                            contest_criteria c ON `;
 }
 
 function getVoteList(compId, callback){
