@@ -21,9 +21,9 @@ function checkEmail(email, callback){
     })
 }
 
-function addUser(name, email, password, role_requested){
-    const sqlc = `INSERT INTO users (name, email, password, role, role_requested) VALUES(
-        '${name}', '${email}', '${password}', 'user', '${role_requested}')`;
+function addUser(name, email, password){
+    const sqlc = `INSERT INTO users (name, email, password, role) VALUES(
+        '${name}', '${email}', '${password}', 'user')`;
     pool.query(sqlc);
 }
 
@@ -42,8 +42,8 @@ function addComp(name, id, date, criteria, createdBy, projects){
                     const contestId = results2.rows[0].id;
                     for(i = 0; i < criteria.length; i++){
                         console.log("inserting criteria")
-                        const sqlc = `INSERT INTO contest_criteria (contest_id, criteria_name, criteria_description) VALUES(
-                            '${contestId}', '${criteria[i]}', '')`;
+                        const sqlc = `INSERT INTO contest_criteria (contest_id, criteria_name, criteria_description, coefficient) VALUES(
+                            '${contestId}', '${criteria[i].name}', '${criteria[i].description}', '${criteria[i].coefficient}')`;
                         pool.query(sqlc);
                     }
                     addProj(id, projects)
@@ -61,12 +61,12 @@ function getComp(id, callback){
 }
 
 function addProj(id, projects){
-    getComp(id, (error, result) => {
+    getComp(id, (error1, result) => {
         console.log("no error yet in proj")
-        if(error){
+        if(error1){
             console.log("error in proj")
         }
-        if(!error && result.rowCount != 0){
+        if(!error1 && result.rowCount != 0){
             const contestId = result.rows[0].id;
             console.log("read contest id");
             for(i = 0; i < projects.length; i++){
@@ -84,4 +84,27 @@ function getProj(id, callback){
     pool.query(sqlc, callback);
 }
 
-module.exports = {checkEmail, addUser, addComp, getComp, addProj, getProj};
+function getProjID(id, callback){
+    const sqlc = `SELECT p.id FROM projects p JOIN contests c ON p.contest = c.id WHERE c.access_code = '${id}'`;
+    pool.query(sqlc, callback);
+}
+
+function getUser(name, callback){
+    const sqlc = `SELECT userid FROM users WHERE name = '${name}'`;
+    pool.query(sqlc, callback);
+}
+
+function vote(userId, compId, projectId, comment, votes){
+    const sqlc1 = `INSERT INTO votes (user, contest, project, comment) VALUES (
+        '${userId}', '${compId}', '${projectId}', '${comment}')`;
+    pool.query(sqlc1);
+    const sqlc2 = `INSERT INTO user_criteria_vote (userid, criteria_id, point, project_id) VALUES (
+        '${userId}', '', '', '${projectId}')`;
+    pool.query(sqlc2);
+}
+
+function getVoteList(compId, callback){
+    const sqlc = "";
+}
+
+module.exports = {checkEmail, addUser, addComp, getComp, getUser, addProj, getProj, getProjID, vote, getVoteList};

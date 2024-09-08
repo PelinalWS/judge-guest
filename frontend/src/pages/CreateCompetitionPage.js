@@ -81,24 +81,32 @@ function CreateCompetitionPage() {
                         <li key={index}>
                             {editingCriterionIndex === index ? (
                                 <>
-                                    <input
-                                        type="text"
-                                        value={criterion.name}
-                                        onChange={(e) => {
-                                            const updatedCriteria = [...criteria];
-                                            updatedCriteria[index].name = e.target.value;
-                                            setCriteria(updatedCriteria);
-                                        }}
-                                    />
-                                    <textarea
-                                        value={criterion.description}
-                                        onChange={(e) => {
-                                            const updatedCriteria = [...criteria];
-                                            updatedCriteria[index].description = e.target.value;
-                                            setCriteria(updatedCriteria);
-                                        }}
-                                    />
-                                    <button onClick={() => setEditingCriterionIndex(null)}>Kaydet</button>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            value={criterion.name}
+                                            onChange={(e) => {
+                                                const updatedCriteria = [...criteria];
+                                                updatedCriteria[index].name = e.target.value;
+                                                setCriteria(updatedCriteria);
+                                            }}
+                                            style= {{width: '95%',
+                                                    marginLeft: '10px'
+                                                    }}
+                                        />
+                                        <textarea
+                                            value={criterion.description}
+                                            onChange={(e) => {
+                                                const updatedCriteria = [...criteria];
+                                                updatedCriteria[index].description = e.target.value;
+                                                setCriteria(updatedCriteria);
+                                            }}
+                                            style= {{width: '95%',
+                                                    marginLeft: '10px'
+                                                    }}
+                                        />
+                                        <button onClick={() => setEditingCriterionIndex(null)}>Kaydet</button>
+                                    </div>
                                 </>
                             ) : (
                                 <>
@@ -127,37 +135,37 @@ function CreateCompetitionPage() {
                         <li key={index}>
                             {editingProjectIndex === index ? (
                                 <>
-                                    <input
-                                        type="text"
-                                        value={project.name}
-                                        onChange={(e) => {
-                                            const updatedProjects = [...projects];
-                                            updatedProjects[index].name = e.target.value;
-                                            setProjects(updatedProjects);
-                                        }}
-                                    />
-                                    <textarea
-                                        value={project.description}
-                                        onChange={(e) => {
-                                            const updatedProjects = [...projects];
-                                            updatedProjects[index].description = e.target.value;
-                                            setProjects(updatedProjects);
-                                        }}
-                                    />
-                                    <button onClick={() => setEditingProjectIndex(null)}>Kaydet</button>
+                                    <div>
+                                        <input
+                                            type="text"
+                                            value={project.name}
+                                            onChange={(e) => {
+                                                const updatedProjects = [...projects];
+                                                updatedProjects[index].name = e.target.value;
+                                                setProjects(updatedProjects);
+                                            }}
+                                            style= {{width: '95%',
+                                                    marginLeft: '10px'
+                                                    }}                                        />
+                                        <textarea
+                                            value={project.description}
+                                            onChange={(e) => {
+                                                const updatedProjects = [...projects];
+                                                updatedProjects[index].description = e.target.value;
+                                                setProjects(updatedProjects);
+                                            }}
+                                            style= {{width: '95%',
+                                                    marginLeft: '10px'
+                                                    }}
+                                        />
+                                        <button onClick={() => setEditingProjectIndex(null)}>Kaydet</button>
+                                    </div>
                                 </>
                             ) : (
                                 <>
                                     {project.name} - {project.description}
-                                    <button className="small-button" onClick={() => setEditingProjectIndex(index)}>
-                                        Düzenle
-                                    </button>
-                                    <button
-                                        className="small-button"
-                                        onClick={() => setProjects(projects.filter((_, i) => i !== index))}
-                                    >
-                                        Sil
-                                    </button>
+                                    <button className="small-button" onClick={() => setEditingProjectIndex(index)}>Düzenle</button>
+                                    <button className="small-button" onClick={() => setProjects(projects.filter((_, i) => i !== index))}>Sil</button>
                                 </>
                             )}
                         </li>

@@ -7,6 +7,7 @@ import CreateCompetitionPage from './pages/CreateCompetitionPage';
 import CompetitionPage from './pages/CompetitionPage';
 import VotePage from './pages/VotePage';
 import NicknameEntryPage from './pages/NicknameEntryPage';
+import AdminPage from './pages/AdminPage';
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/competition/:competitionId" element={<CompetitionPage />} />
             <Route path="/nickname-entry/:competitionId" element={<NicknameEntryPage />} />
             <Route path="/competition/:competitionId/vote/:projectId" element={<VotePage />} />
+            <Route path="/admin-panel/:competitionId" element={<AdminPage />} />
             <Route path="/signUp" element={<SignUpPage />} />
             <Route path="/logIn" element={<LoginPage />} />  {/* Wildcard route moved to the bottom */}
             <Route path="*" element={<LoginPage />} />  {/* Wildcard route moved to the bottom */}

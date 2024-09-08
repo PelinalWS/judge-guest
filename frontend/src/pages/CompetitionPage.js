@@ -95,6 +95,10 @@ function CompetitionPage() {
         socket.emit('finishVoting', { competitionId });
     };
 
+    const goAdminPanel = () => {
+        navigate(`/admin-panel/${competitionId}`);
+    }
+
     const handleShowResults = () => {
         socket.emit('showResults', { competitionId });
         setResultsVisible(true);
@@ -249,6 +253,12 @@ function CompetitionPage() {
                             Sonuçları Gör
                         </button>
                     )}
+                </div>
+            )}
+
+            {(user.role === 'admin') && (
+                <div style= {{ marginTop: '20px' }}>
+                    <button onClick={goAdminPanel}>Oylamalar</button>
                 </div>
             )}
 

@@ -14,25 +14,31 @@ function generateCompetitionCode() {
 
 function handleSocketEvents(socket, io) {
 
-    socket.on('signUp', ({ name, email, password, role }) => {
-        console.log("kullanıcı kayıdı")
-        checks.checkEmail(email, (error, det, results) => {
-            if(error){
-                console.log("email hata");
-                console.log(det);
-            }
-            if(!error && !det){
-                bcrypt.hash(password, 10, (error, hash) => {
-                    if(error){
-                        console.log("hash yaparken hata");
-                    } else {
-                        checks.addUser(name, email, hash, role);
-                    }
-                });
-                console.log("kayıt başarılı");
-                socket.emit('signUp-confirm');
-            }
-        });
+    socket.on('signUp', ({ name, email, password}) => {
+        console.log("kullanıcı kayıdı");
+        const extension = email.split("@");
+        if(extension[1] == "havelsan.com.tr"){
+            checks.checkEmail(email, (error, det, results) => {
+                if(error){
+                    console.log("email hata");
+                }
+                if(!error && !det){
+                    bcrypt.hash(password, 10, (error, hash) => {
+                        if(error){
+                            console.log("hash yaparken hata");
+                        } else {
+                            checks.addUser(name, email, hash);
+                        }
+                    });
+                    console.log("kayıt başarılı");
+                    socket.emit('signUp-confirm');
+                }
+            });
+        } else {
+            const message = "Lütfen Havelsan mailinizi kullanın.";
+            socket.emit('signUp-reject', (message));
+        }
+
     });
 
     socket.on('login-request', ({ email, password})=>{
@@ -44,8 +50,8 @@ function handleSocketEvents(socket, io) {
             } else if(!error && det){
                 console.log("hesap bulundu")
                 bcrypt.compare(password, results.rows[0].password, (error, res) => {
-                    console.log("şifre doğru");
                     if(!error & res){
+                        console.log("şifre doğru");
                         const name = results.rows[0].name;
                         const email = results.rows[0].email;
                         const password = results.rows[0].password;
@@ -81,6 +87,9 @@ function handleSocketEvents(socket, io) {
                             const message = "Henüz rolünüz tanımlanmadı."
                             socket.emit('login-reject', (message));
                         }
+                    } else {
+                        const message = "Girdiğiniz şifre yanlış.";
+                        socket.emit('login-reject', (message));
                     }
                 })
             }
@@ -90,39 +99,45 @@ function handleSocketEvents(socket, io) {
      // Yarisma yaratma
      socket.on('createCompetition', ({ name, date, criteria, projects, createdBy, juryVoteCoefficient }) => {
         const competitionId = generateCompetitionCode();
-        competitions[competitionId] = {
-            name,
-            date, 
-            criteria,  // katsayılar ve acıklamalar criteria icinde
-            projects: projects.map(project => ({
-                ...project,
-                totalScore: 0,
-                voteCount: 0,
-                averageScore: 0,
-                votes: {},
-                comments: []
-            })),
-            createdBy,
-            connectedUsers: [],
-            juryMembers: [],
-            votingStarted: false,
-            votingFinished: false,
-            resultsVisible: false,
-            juryVoteCoefficient: juryVoteCoefficient || 2,  // default jüri katsayısı
-        };
-    
-        console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
-    
-        socket.join(competitionId);
-        socket.emit('competitionCreated', competitionId);
+        checks.addComp(name, competitionId, date, criteria, createdBy, projects);
+        checks.getProjID(competitionId, (error, results) => {
+            if(!error){
+                console.log(results)
+                /*for(i = 0; i < projects.length; i++){
+                    const newID = results.rows[i].id;
+                    console.log(newID);
+                    projects[i].id = newID;
+                }*/
+                competitions[competitionId] = {
+                    name,
+                    date, 
+                    criteria,  // katsayılar ve acıklamalar criteria icinde
+                    projects: projects.map(project => ({
+                        ...project,
+                        totalScore: 0,
+                        voteCount: 0,
+                        averageScore: 0,
+                        votes: {},
+                        comments: []
+                    })),
+                    createdBy,
+                    connectedUsers: [],
+                    juryMembers: [],
+                    votingStarted: false,
+                    votingFinished: false,
+                    resultsVisible: false,
+                    juryVoteCoefficient: juryVoteCoefficient || 2,  // default jüri katsayısı
+                };
+                console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
+
+                socket.join(competitionId);
+                socket.emit('competitionCreated', competitionId);
+            }
+        });
     });
 
     // Yarismaya katilma
     socket.on('joinCompetition', ({ competitionId, name }) => {
-        checks.getComp(competitionId, (result) => {
-            const competition = result;
-
-        });
         if (competitions[competitionId]) {
             const competition = competitions[competitionId];
 
@@ -147,7 +162,7 @@ function handleSocketEvents(socket, io) {
                 console.log(`No competition found with competitionId: ${competitionId}`);
                 socket.emit('error', 'Competition not found');
             } else {
-                checks.getProj(results1.rows[0].id, (error2, results2) => {
+                checks.getProj1(results1.rows[0].id, (error2, results2) => {
                     if(!error2 && results2.rowCount != 0){
                         const projects = {};
                         for(i = 0; i < results2.rowCount; i++){
@@ -211,6 +226,16 @@ function handleSocketEvents(socket, io) {
     });
 
     socket.on('submitVotes', ({ competitionId, projectId, userName, comment, votes }) => {
+        console.log(votes);
+        checks.getComp(competitionId, (error1, compId) => {
+            if(!error1){
+                checks.getUser(userName, (error2, userId) => {
+                    if(!error2){
+                        checks.vote(userId, compId, projectId, comment, votes);
+                    }
+                });
+            }
+        });
         const competition = competitions[competitionId];
         if (competition) {
             const project = competition.projects.find(p => p.id === projectId);
@@ -272,7 +297,13 @@ function handleSocketEvents(socket, io) {
         }
     });
     
-    
+    socket.on('request-vote-table', ({ competitionId }) => {
+        checks.getComp(competitionId, (error1, results1) => {
+            checks.getVoteList(results1.rows[0].id, (error2, results2) => {
+                socket.emit('receive-vote-table', (results2));
+            });
+        });
+    });
 
 }
 

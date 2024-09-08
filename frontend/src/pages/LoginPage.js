@@ -25,18 +25,29 @@ function LoginPage() {
     };
 
     useEffect(() => {
-        socket.on('login-confirm', (data) => {
-            console.log("hesap açılıyor");  
+        const handleLoginConfirm = (data) => {
+            console.log('Logging in');
             setUser({
                 name: data.name,
                 email: data.email,
                 password: 'XXX',
                 role: data.role,
-                token: data.token
+                token: data.token,
+                // Other user properties
             });
             navigate('/lobby');
-        });
-        socket.on('login-reject', (message) => {});
+        };
+        const handleLoginReject = (message) => {
+            alert(message);
+        };
+        socket.on('login-confirm', handleLoginConfirm);
+        socket.on('login-reject', handleLoginReject);
+      
+        // Cleanup listeners when component unmounts or effect re-runs
+        return () => {
+        socket.off('login-confirm', handleLoginConfirm);
+        socket.off('login-reject', handleLoginReject);
+        };      
     });
 
     return (
@@ -49,6 +60,10 @@ function LoginPage() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        style={{
+                            width: '95%',
+                            marginLeft: '10px'
+                        }}
                     />
                 </div>
                 <div>
@@ -58,6 +73,10 @@ function LoginPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={{
+                            width: '95%',
+                            marginLeft: '10px'
+                        }}
                     />
                 </div>
                 <button type="submit">Giriş Yap</button>

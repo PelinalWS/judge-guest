@@ -11,21 +11,28 @@ function SignUpPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState('');
 
     const handleSignUp = (e) => {
         e.preventDefault();
-        if (name && email && password && role) {
-            socket.emit('signUp', {name: name, email: email, password: password, role: role})
+        if (name && email && password) {
+            socket.emit('signUp', {name: name, email: email, password: password})
         }
     };
 
     const goLog = () => {
-        navigate('/login');
+        navigate('/logIn');
     };
 
     useEffect(()=> {
         socket.on('signUp-confirm', goLog);
+        const handleSignUpReject = (message) => {
+            alert(message);
+        };
+        socket.on('signUp-reject', handleSignUpReject);
+        return () => {
+            socket.off('signUp-confirm', goLog);
+            socket.off('signUp-reject', handleSignUpReject);
+            };
     });
 
     return (
@@ -33,12 +40,16 @@ function SignUpPage() {
             <h1>Kayıt</h1>
             <form onSubmit={handleSignUp}>
                 <div>
-                    <label>İsim:</label>
+                    <label>Kullanıcı Adı:</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
+                        style={{
+                            width: '95%',
+                            marginLeft: '10px'
+                        }}
                     />
                 </div>
                 <div>
@@ -48,6 +59,10 @@ function SignUpPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        style={{
+                            width: '95%',
+                            marginLeft: '10px'
+                        }}
                     />
                 </div>
                 <div>
@@ -57,20 +72,11 @@ function SignUpPage() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        style={{
+                            width: '95%',
+                            marginLeft: '10px'
+                        }}
                     />
-                </div>
-                <div>
-                    <label>Başvurulan Rol:</label>
-                    <select
-                        value={role}
-                        onChange={(e) => setRole(e.target.value)}
-                        required
-                    >
-                        <option value="" disabled selected>Rolünü Seç</option>
-                        <option value="user">Kullanıcı</option>
-                        <option value="member">Üye</option>
-                        <option value="admin">Admin</option>
-                    </select>
                 </div>
                 <button type="submit">Kayıt Ol</button>
                 <button onClick={goLog}>Giriş Yap</button>
