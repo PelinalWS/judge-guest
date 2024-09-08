@@ -100,52 +100,40 @@ function handleSocketEvents(socket, io) {
      socket.on('createCompetition', ({ name, date, criteria, projects, createdBy, juryVoteCoefficient }) => {
         const competitionId = generateCompetitionCode();
         checks.addComp(name, competitionId, date, criteria, createdBy, projects);
-        checks.getProjID(competitionId, (error, results) => {
-            if(!error){
-                console.log(results)
-                /*for(i = 0; i < projects.length; i++){
-                    const newID = results.rows[i].id;
-                    console.log(newID);
-                    projects[i].id = newID;
-                }*/
-                competitions[competitionId] = {
-                    name,
-                    date, 
-                    criteria,  // katsayılar ve acıklamalar criteria icinde
-                    projects: projects.map(project => ({
-                        ...project,
-                        totalScore: 0,
-                        voteCount: 0,
-                        averageScore: 0,
-                        votes: {},
-                        comments: []
-                    })),
-                    createdBy,
-                    connectedUsers: [],
-                    juryMembers: [],
-                    votingStarted: false,
-                    votingFinished: false,
-                    resultsVisible: false,
-                    juryVoteCoefficient: juryVoteCoefficient || 2,  // default jüri katsayısı
-                };
-                console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
+        competitions[competitionId] = {
+            name,
+            date, 
+            criteria,  // katsayılar ve acıklamalar criteria icinde
+            projects: projects.map(project => ({
+                ...project,
+                totalScore: 0,
+                voteCount: 0,
+                averageScore: 0,
+                votes: {},
+                comments: []
+            })),
+            createdBy,
+            connectedUsers: [],
+            juryMembers: [],
+            votingStarted: false,
+            votingFinished: false,
+            resultsVisible: false,
+            juryVoteCoefficient: juryVoteCoefficient || 2,  // default jüri katsayısı
+        };
+        console.log(`Competition created: ${competitionId}`, competitions[competitionId]);
 
-                socket.join(competitionId);
-                socket.emit('competitionCreated', competitionId);
-            }
-        });
+        socket.join(competitionId);
+        socket.emit('competitionCreated', competitionId);
     });
 
     // Yarismaya katilma
     socket.on('joinCompetition', ({ competitionId, name }) => {
         if (competitions[competitionId]) {
             const competition = competitions[competitionId];
-
             const userExists = competition.connectedUsers.some((user) => user.name === name);
             if (!userExists) {
                 competition.connectedUsers.push({ name });
             }
-
             socket.join(competitionId);
             io.in(competitionId).emit('competitionData', competition);
             console.log(`User ${name} joined competition: ${competitionId}`);
@@ -162,7 +150,7 @@ function handleSocketEvents(socket, io) {
                 console.log(`No competition found with competitionId: ${competitionId}`);
                 socket.emit('error', 'Competition not found');
             } else {
-                checks.getProj1(results1.rows[0].id, (error2, results2) => {
+                checks.getProj(results1.rows[0].id, (error2, results2) => {
                     if(!error2 && results2.rowCount != 0){
                         const projects = {};
                         for(i = 0; i < results2.rowCount; i++){
@@ -172,6 +160,7 @@ function handleSocketEvents(socket, io) {
                                 description: results2.rows[i].description
                             };
                         }
+                        console.log(projects);
                         const competition = {
                             name: results1.rows[0].name,
                             date: results1.rows[0].date,
@@ -227,15 +216,8 @@ function handleSocketEvents(socket, io) {
 
     socket.on('submitVotes', ({ competitionId, projectId, userName, comment, votes }) => {
         console.log(votes);
-        checks.getComp(competitionId, (error1, compId) => {
-            if(!error1){
-                checks.getUser(userName, (error2, userId) => {
-                    if(!error2){
-                        checks.vote(userId, compId, projectId, comment, votes);
-                    }
-                });
-            }
-        });
+        checks.vote(userName, competitionId, projectId, comment, votes);
+        
         const competition = competitions[competitionId];
         if (competition) {
             const project = competition.projects.find(p => p.id === projectId);
@@ -297,12 +279,27 @@ function handleSocketEvents(socket, io) {
         }
     });
     
-    socket.on('request-vote-table', ({ competitionId }) => {
-        checks.getComp(competitionId, (error1, results1) => {
-            checks.getVoteList(results1.rows[0].id, (error2, results2) => {
-                socket.emit('receive-vote-table', (results2));
-            });
+    const getUsers = () => {
+        checks.listAllUsers((error, results) => {
+            if(!error){
+                const list = results.rows;
+                socket.emit('receive-users', list );
+            } else {
+                console.log("error");
+            }
         });
+    }
+
+    socket.on('request-users', getUsers);
+
+    socket.on('update-user-auth', ({email, newAuth}) => {
+        console.log(email);
+        console.log(newAuth);
+        checks.changeAuth(newAuth, email)
+    });
+
+    socket.on('request-vote-table', ({ competitionId }) => {
+
     });
 
 }

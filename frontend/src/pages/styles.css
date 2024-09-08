@@ -28,7 +28,8 @@ body, html {
 
 /* Form section styling */
 .competition-form {
-    width: 100%;
+    width: 95%;
+    margin-left: 10px;
     padding-bottom: 20px;
     border-bottom: 2px solid #ddd;
     margin-bottom: 20px;

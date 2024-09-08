@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { UserContext } from '../UserContext';
 import './styles.css';
 import { io } from 'socket.io-client';
 
@@ -10,15 +9,18 @@ const socket = io(`${url.backend}`);
 function AdminPage() {
     const { competitionId } = useParams(); // URL'den yarışma ID'si alınıyor
     const navigate = useNavigate();
-    const { user, setUser } = useContext(UserContext);
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        socket.emit('request-vote-table');
+        socket.emit('request-vote-table', competitionId);
         socket.on('receive-vote-table', (data) => {
             setData(data);
         });
     }, []);
+
+    const goComp = () => {
+      navigate(`/competition/${competitionId}`)
+    }
 
     return (
         <div>
@@ -45,7 +47,9 @@ function AdminPage() {
               </tbody>
             </table>
           ) : (
-            <p>No data available.</p>
+            <>
+              <p style={{ alignContent: 'center' }}>No data available.</p>
+              <button onClick={goComp}>Oylama Sayfasına Dön</button></>
           )}
         </div>
       );

@@ -146,7 +146,8 @@ function CreateCompetitionPage() {
                                             }}
                                             style= {{width: '95%',
                                                     marginLeft: '10px'
-                                                    }}                                        />
+                                                    }}                                        
+                                        />
                                         <textarea
                                             value={project.description}
                                             onChange={(e) => {

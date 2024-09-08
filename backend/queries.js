@@ -46,7 +46,7 @@ function addComp(name, id, date, criteria, createdBy, projects){
                             '${contestId}', '${criteria[i].name}', '${criteria[i].description}', '${criteria[i].coefficient}')`;
                         pool.query(sqlc);
                     }
-                    addProj(id, projects)
+                    addProj(id, projects);
                 }
             });
         }
@@ -61,7 +61,7 @@ function getComp(id, callback){
 }
 
 function addProj(id, projects){
-    getComp(id, (error1, result) => {
+    getComp(id, async (error1, result) => {
         console.log("no error yet in proj")
         if(error1){
             console.log("error in proj")
@@ -84,11 +84,6 @@ function getProj(id, callback){
     pool.query(sqlc, callback);
 }
 
-function getProjID(id, callback){
-    const sqlc = `SELECT p.id FROM projects p JOIN contests c ON p.contest = c.id WHERE c.access_code = '${id}'`;
-    pool.query(sqlc, callback);
-}
-
 function getUser(name, callback){
     const sqlc = `SELECT userid FROM users WHERE name = '${name}'`;
     pool.query(sqlc, callback);
@@ -107,4 +102,22 @@ function getVoteList(compId, callback){
     const sqlc = "";
 }
 
-module.exports = {checkEmail, addUser, addComp, getComp, getUser, addProj, getProj, getProjID, vote, getVoteList};
+function listAllUsers(callback){
+    const sqlc = `SELECT name, email, role FROM users ORDER BY email ASC`;
+    pool.query(sqlc, callback);
+}
+
+function changeAuth(newAuth, email){
+    if(newAuth == 'user'){
+        const sqlc = `UPDATE users SET role = 'user' WHERE email = '${email}';`;
+        pool.query(sqlc);
+    } else if(newAuth == 'member'){
+        const sqlc = `UPDATE users SET role = 'member' WHERE email = '${email}';`;
+        pool.query(sqlc);
+    } else if(newAuth == 'admin'){
+        const sqlc = `UPDATE users SET role = 'admin' WHERE email = '${email}';`;
+        pool.query(sqlc);
+    }
+}
+
+module.exports = {checkEmail, addUser, addComp, getComp, getUser, addProj, getProj, vote, getVoteList, listAllUsers, changeAuth};

@@ -196,11 +196,11 @@ function CompetitionPage() {
                 <h3>Durum: {renderStatusMessage()}</h3>
             </div>
 
-            <h3>Kriterler</h3>
+            <h3>Değerlendirme Kriterleri</h3>
             <ul>
                 {competition.criteria.map((criterion, index) => (
                     <li key={index}>
-                        <strong>{criterion.name}</strong>: {criterion.description} (Katsayı: {criterion.coefficient})
+                        <strong>{criterion.name}</strong>: {criterion.description}
                     </li>
                 ))}
             </ul>
