@@ -44,33 +44,14 @@ function ProjectList({
                                             {/* Kullanıcının verdiği ağırlıklı ortalama puanı göster */}
                                             <p>
                                                 <strong>Verdiğiniz Ağırlıklı Ortalama Puan:</strong>{' '}
-                                                {(
-                                                    project.votes[user.name].weightedScore /
-                                                    Object.keys(project.votes[user.name]).length // Kriter sayısına bölerek ortalama al
-                                                ).toFixed(2)}
+                                                
+                                                    {project.votes[user.name].weightedScore.toFixed(3) }
                                             </p>
                                         </div>
                                     ) : (
                                         <p>Kendi Puanınız: Puan verilmedi</p>
                                     )}
 
-                                    {/* Admin ya da üye ise yorumları göster */}
-                                    {(user.role === 'admin' || user.role === 'member') && (
-                                        <div>
-                                            <h4>Kullanıcı Yorumları:</h4>
-                                            {project.comments.length > 0 ? (
-                                                <ul>
-                                                    {project.comments.map((comment, idx) => (
-                                                        <li key={idx}>
-                                                            <strong>{comment.userName}:</strong> {comment.comment}
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            ) : (
-                                                <p>Yorum bulunamadı.</p>
-                                            )}
-                                        </div>
-                                    )}
                                 </>
                             ) : (
                                 // Oylama sırasında, sonuçlar olmadan verilen puanları göster

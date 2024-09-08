@@ -2,65 +2,168 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { UserContext } from '../UserContext';
-import CompetitionForm from './CompetitionForm';
+import CompetitionForm from './CompetitionForm'; // CompetitionForm componenti
 import './styles.css';
 
-// Socket.io bağlantısını başlat. (backend ip)
 const url = require('../config.json').url;
 const socket = io(`${url.backend}`);
-
 function CreateCompetitionPage() {
-    const navigate = useNavigate(); 
-    const { user } = useContext(UserContext); 
+    const navigate = useNavigate();
+    const { user } = useContext(UserContext);
 
-    // Yarışma bilgilerini saklamak için durum değişkenleri
-    const [competitionName, setCompetitionName] = useState(''); // Yarışma adı
-    const [competitionDate, setCompetitionDate] = useState(''); // Yarışma tarihi
-    const [criteria, setCriteria] = useState([]); // Yarışma kriterleri
-    const [projects, setProjects] = useState([]); // Yarışma projeleri
-    const [juryVoteCoefficient, setJuryVoteCoefficient] = useState(2); // Varsayılan jüri oy katsayısı
+    const [competitionName, setCompetitionName] = useState('');
+    const [competitionDate, setCompetitionDate] = useState('');
+    const [criteria, setCriteria] = useState([]);
+    const [projects, setProjects] = useState([]);
+    const [editingCriterionIndex, setEditingCriterionIndex] = useState(null);
+    const [editingProjectIndex, setEditingProjectIndex] = useState(null);
+    const [juryVoteCoefficient, setJuryVoteCoefficient] = useState(2); // Varsayılan jüri katsayısı
 
-    // Yarışmayı oluşturma işlemini gerçekleştiren fonksiyon
+    // Yarışmayı oluşturma fonksiyonu
     const handleCreateCompetition = () => {
         if (competitionName && competitionDate && criteria.length && projects.length) {
-            // Yarışma bilgilerini sunucuya gönderme
             socket.emit('createCompetition', {
                 name: competitionName,
                 date: competitionDate,
                 criteria,
                 projects,
-                createdBy: user.name, // Yarışmayı oluşturan kullanıcı
-                juryVoteCoefficient: juryVoteCoefficient, 
+                createdBy: user.name,
+                juryVoteCoefficient: juryVoteCoefficient, // Jüri katsayısı gönderildi (Yeni eklendi)
             });
 
-            // Yarışma başarıyla oluşturulduğunda yarışma sayfasına geçilir
             socket.on('competitionCreated', (competitionId) => {
                 navigate(`/competition/${competitionId}`);
             });
         } else {
-            alert('Lütfen tüm alanları, yarışma tarihi de dahil olmak üzere doldurun.');
+            alert('Lütfen tüm alanları doldurun.');
         }
     };
 
     return (
-        <div className="container">
+        <div className="competition-container">
             <h1>Yarışma Oluştur</h1>
-            <CompetitionForm
-                competitionName={competitionName}
-                setCompetitionName={setCompetitionName}
-                competitionDate={competitionDate}
-                setCompetitionDate={setCompetitionDate}
-                criteria={criteria}
-                setCriteria={setCriteria}
-                projects={projects}
-                setProjects={setProjects}
-                juryVoteCoefficient={juryVoteCoefficient} // Katsayıyı aktarma
-                setJuryVoteCoefficient={setJuryVoteCoefficient} // Katsayıyı güncelleme
-            />
-            {/* Yarışma oluşturma butonu */}
-            <button onClick={handleCreateCompetition} style={{ width: '90%', padding: '10px', backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '15px' }}>
-                Yarışma Oluştur
-            </button>
+            <div className="competition-form">
+                <CompetitionForm
+                    competitionName={competitionName}
+                    setCompetitionName={setCompetitionName}
+                    competitionDate={competitionDate}
+                    setCompetitionDate={setCompetitionDate}
+                    criteria={criteria}
+                    setCriteria={setCriteria}
+                    projects={projects}
+                    setProjects={setProjects}
+                    juryVoteCoefficient={juryVoteCoefficient}
+                    setJuryVoteCoefficient={setJuryVoteCoefficient}
+                />
+                <button
+                    onClick={handleCreateCompetition}
+                    style={{
+                        width: '100%',
+                        padding: '10px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        marginTop: '15px',
+                    }}
+                >
+                    Yarışma Oluştur
+                </button>
+            </div>
+
+            {/* Kriter ve Proje alanlarını ekle */}
+            <div className="added-section">
+                {/* Eklenen Kriterler */}
+                <h3>Eklenen Kriterler</h3>
+                <ul>
+                    {criteria.map((criterion, index) => (
+                        <li key={index}>
+                            {editingCriterionIndex === index ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={criterion.name}
+                                        onChange={(e) => {
+                                            const updatedCriteria = [...criteria];
+                                            updatedCriteria[index].name = e.target.value;
+                                            setCriteria(updatedCriteria);
+                                        }}
+                                    />
+                                    <textarea
+                                        value={criterion.description}
+                                        onChange={(e) => {
+                                            const updatedCriteria = [...criteria];
+                                            updatedCriteria[index].description = e.target.value;
+                                            setCriteria(updatedCriteria);
+                                        }}
+                                    />
+                                    <button onClick={() => setEditingCriterionIndex(null)}>Kaydet</button>
+                                </>
+                            ) : (
+                                <>
+                                    {criterion.name} - Katsayı: {criterion.coefficient}
+                                    <br />
+                                    Açıklama: {criterion.description}
+                                    <button className="small-button" onClick={() => setEditingCriterionIndex(index)}>
+                                        Düzenle
+                                    </button>
+                                    <button
+                                        className="small-button"
+                                        onClick={() => setCriteria(criteria.filter((_, i) => i !== index))}
+                                    >
+                                        Sil
+                                    </button>
+                                </>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+
+                {/* Eklenen Projeler */}
+                <h3>Eklenen Projeler</h3>
+                <ul>
+                    {projects.map((project, index) => (
+                        <li key={index}>
+                            {editingProjectIndex === index ? (
+                                <>
+                                    <input
+                                        type="text"
+                                        value={project.name}
+                                        onChange={(e) => {
+                                            const updatedProjects = [...projects];
+                                            updatedProjects[index].name = e.target.value;
+                                            setProjects(updatedProjects);
+                                        }}
+                                    />
+                                    <textarea
+                                        value={project.description}
+                                        onChange={(e) => {
+                                            const updatedProjects = [...projects];
+                                            updatedProjects[index].description = e.target.value;
+                                            setProjects(updatedProjects);
+                                        }}
+                                    />
+                                    <button onClick={() => setEditingProjectIndex(null)}>Kaydet</button>
+                                </>
+                            ) : (
+                                <>
+                                    {project.name} - {project.description}
+                                    <button className="small-button" onClick={() => setEditingProjectIndex(index)}>
+                                        Düzenle
+                                    </button>
+                                    <button
+                                        className="small-button"
+                                        onClick={() => setProjects(projects.filter((_, i) => i !== index))}
+                                    >
+                                        Sil
+                                    </button>
+                                </>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </div>
     );
 }

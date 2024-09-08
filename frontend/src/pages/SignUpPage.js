@@ -2,10 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './styles.css';
 
-import { io } from 'socket.io-client';
 const url = require('../config.json').url;
 const socket = io(`${url.backend}`);
-
 function SignUpPage() {
     const navigate = useNavigate();
     const [name, setName] = useState('');
