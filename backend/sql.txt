@@ -1,18 +1,79 @@
 
-delete from contests where description = '';
-delete from contest_criteria  where criteria_description = '';
+delete from contests;
+delete from contest_criteria;
 delete from projects;
 
+select id from projects where name= 'abc' and contest = 1;
+select name, email, role from users order by email asc
+
+select p.id from projects p join contests c on p.contest = c.id where c.access_code = ''
+-- DROP TYPE public."role_status";
+
+INSERT INTO votes ("user", contest, project, "comment")
+	SELECT
+    	u.userid,
+    	p.contest AS contest_id,
+    	p.id AS project_id,
+    	'query trial' AS comment
+	FROM
+    	users u
+	JOIN
+    	contests c ON c.access_code = 'ECDB60'
+	JOIN
+    	projects p ON p.id = 29
+	WHERE
+    	u.email = 'biscan@havelsan.com.tr';
+
+
+
+-- DROP SCHEMA public;
+
+CREATE SCHEMA public AUTHORIZATION pg_database_owner;
 
 -- DROP TYPE public."role_status";
 
 CREATE TYPE public."role_status" AS ENUM (
 	'null',
-	'admin',
+	'user',
 	'member',
-	'user');
+	'admin');
 
--- public.users definition
+-- DROP SEQUENCE contest_criteria_criteria_id_seq;
+
+CREATE SEQUENCE contest_criteria_criteria_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 2147483647
+	START 1
+	CACHE 1
+	NO CYCLE;
+-- DROP SEQUENCE contests_id_seq;
+
+CREATE SEQUENCE contests_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 2147483647
+	START 1
+	CACHE 1
+	NO CYCLE;
+-- DROP SEQUENCE projects_id_seq;
+
+CREATE SEQUENCE projects_id_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 2147483647
+	START 1
+	CACHE 1
+	NO CYCLE;
+-- DROP SEQUENCE users_userid_seq;
+
+CREATE SEQUENCE users_userid_seq
+	INCREMENT BY 1
+	MINVALUE 1
+	MAXVALUE 2147483647
+	START 1
+	CACHE 1
+	NO CYCLE;-- public.users definition
 
 -- Drop table
 
@@ -24,9 +85,9 @@ CREATE TABLE users (
 	email varchar NOT NULL,
 	"password" varchar NOT NULL,
 	"role" public."role_status" DEFAULT 'null'::role_status NULL,
-	role_requested public."role_status" NULL,
 	CONSTRAINT users_pk PRIMARY KEY (userid)
 );
+
 
 -- public.contests definition
 
@@ -40,12 +101,11 @@ CREATE TABLE contests (
 	created_by int4 NOT NULL,
 	"date" date NOT NULL,
 	description varchar NOT NULL,
-	members _int4 NULL,
-	jury _int4 NULL,
 	access_code varchar NOT NULL,
 	CONSTRAINT contests_pk PRIMARY KEY (id),
 	CONSTRAINT contests_users_fk FOREIGN KEY (created_by) REFERENCES users(userid)
 );
+
 
 -- public.projects definition
 
@@ -63,6 +123,7 @@ CREATE TABLE projects (
 	CONSTRAINT projects_contests_fk FOREIGN KEY (contest) REFERENCES contests(id)
 );
 
+
 -- public.votes definition
 
 -- Drop table
@@ -73,12 +134,12 @@ CREATE TABLE votes (
 	"user" int4 NOT NULL,
 	contest int4 NOT NULL,
 	project int4 NOT NULL,
-	likert _int2 NULL,
 	"comment" varchar NULL,
 	CONSTRAINT votes_contests_fk FOREIGN KEY (contest) REFERENCES contests(id),
 	CONSTRAINT votes_projects_fk FOREIGN KEY (project) REFERENCES projects(id),
 	CONSTRAINT votes_users_fk FOREIGN KEY ("user") REFERENCES users(userid)
 );
+
 
 -- public.contest_criteria definition
 
@@ -90,9 +151,12 @@ CREATE TABLE contest_criteria (
 	contest_id int4 NOT NULL,
 	criteria_id int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
 	criteria_name varchar NOT NULL,
-	criteria_description varchar NULL,
+	criteria_description varchar NOT NULL,
+	coefficient int2 NOT NULL,
+	CONSTRAINT contest_criteria_pk PRIMARY KEY (criteria_id),
 	CONSTRAINT contest_criteria_contests_fk FOREIGN KEY (contest_id) REFERENCES contests(id)
 );
+
 
 -- public.contest_jury definition
 
@@ -107,6 +171,7 @@ CREATE TABLE contest_jury (
 	CONSTRAINT contest_jury_users_fk FOREIGN KEY (user_id) REFERENCES users(userid)
 );
 
+
 -- public.project_teams definition
 
 -- Drop table
@@ -118,4 +183,21 @@ CREATE TABLE project_teams (
 	"user" int4 NOT NULL,
 	CONSTRAINT project_teams_projects_fk FOREIGN KEY (project) REFERENCES projects(id),
 	CONSTRAINT project_teams_users_fk FOREIGN KEY ("user") REFERENCES users(userid)
+);
+
+
+-- public.user_criteria_vote definition
+
+-- Drop table
+
+-- DROP TABLE user_criteria_vote;
+
+CREATE TABLE user_criteria_vote (
+	userid int4 NOT NULL,
+	criteria_id int4 NOT NULL,
+	point int2 NULL,
+	project_id int4 NOT NULL,
+	CONSTRAINT user_criteria_vote_contest_criteria_fk FOREIGN KEY (criteria_id) REFERENCES contest_criteria(criteria_id),
+	CONSTRAINT user_criteria_vote_projects_fk FOREIGN KEY (project_id) REFERENCES projects(id),
+	CONSTRAINT user_criteria_vote_users_fk FOREIGN KEY (userid) REFERENCES users(userid)
 );
